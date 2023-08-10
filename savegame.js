@@ -6,6 +6,11 @@ module.exports = {
 		constructor(fileName) {
 			this.fileName = fileName; 
 		}
+		
+		readGame() {
+			this.buffer = fs.readFileSync(this.fileName)
+			console.log('Longitud de datos: ' + this.buffer.length); 
+		}			
 	}
 
 }
