@@ -28,6 +28,12 @@ module.exports = {
 				throw new Error('Los datos leídos no concuerdan con el formato Genecyst esperado'); 
 			}
 			
+			this.info = {
+				version: this.buffer.readUInt8(0x50),
+				emulatorID: this.buffer.readUInt8(0x51), 
+				systemID: this.buffer.readUInt8(0x52), 
+			}; 
+			
 			return (true); 
 		}
 		
