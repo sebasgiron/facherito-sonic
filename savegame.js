@@ -55,6 +55,45 @@ module.exports = {
 			};
 		}
 		
+		setRings (value) {
+			if (value > 65535) { throw new Error('Too big!'); }
+			
+			this.buffer.writeUInt16BE(value, 74392);
+			this.analyzeGame();
+		}
+		
+		setLives (value) {
+			if (value > 255) { throw new Error('Too big!'); }
+			
+			this.buffer.writeUInt8(value, 74378);
+			this.analyzeGame();
+		}
+		
+		setZone (value) {
+			if (value > 255) { throw new Error('Too big!'); }
+			
+			this.buffer.writeUInt8(value, 74376);
+			this.analyzeGame();
+		}
+		
+		setAct (value) {
+			if (value > 255) { throw new Error('Too big!'); }
+			
+			this.buffer.writeUInt8(value, 74377);
+			this.analyzeGame();
+		}
+		
+		setScore (value) {
+			if (value > 4294967295) { throw new Error('Too big!') }
+			this.buffer.writeUInt32BE(value / 10, 74398);
+			this.analyzeGame();
+		}
+		
+		writeGame (target) {
+			fs.writeFileSync(target || this.fileName, this.buffer);
+			console.log('Data written successfully');
+		}
+		
 	}
 
 }
