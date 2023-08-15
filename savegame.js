@@ -23,6 +23,11 @@ module.exports = {
 			var i6 = this.buffer.readUInt16BE(6); 
 			console.log('i3 = ' + i3.toString(16));
 			console.log('i6 = ' + i6.toString(16));			
+			
+			if (!((s_gst == 'GST') & (i3 == 0x40e0 | i6 == 0xe040))) {
+				throw new Error('Los datos leídos no concuerdan con el formato Genecyst esperado'); 
+			}
+			
 			return (true); 
 		}
 		
