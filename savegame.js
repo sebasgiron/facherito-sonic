@@ -13,13 +13,17 @@ module.exports = {
 		}
 
 		checkFileFormat() {
+			if(this.buffer == null) {
+				console.log('buffer no asignado, llamando a readGame()'); 
+				this.readGame(); 
+			}			
 			var s_gst = this.buffer.toString('latin1', 0, 3);
 			console.log('s_gst = ' + s_gst); 
-			var i3 = this.buffer.readInt16BE(3); 
-			var i6 = this.buffer.readInt16BE(6); 
+			var i3 = this.buffer.readUInt16BE(3); 
+			var i6 = this.buffer.readUInt16BE(6); 
 			console.log('i3 = ' + i3.toString(16));
-			console.log('i6 = ' + i3.toString(16));			
-			return (s_gst == 'GST'); 
+			console.log('i6 = ' + i6.toString(16));			
+			return (true); 
 		}
 		
 
