@@ -14,7 +14,7 @@ module.exports = {
 
 		checkFileFormat() {
 			if(this.buffer == null) {
-				console.log('buffer no asignado, llamando a readGame()'); 
+				console.log('Buffer no asignado, llamando a readGame()'); 
 				this.readGame(); 
 			}			
 			var s_gst = this.buffer.toString('latin1', 0, 3);
