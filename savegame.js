@@ -57,7 +57,8 @@ module.exports = {
 				emeraldArray: this.buffer.subarray(74794, 74801),
 				rings: this.buffer.readUInt16BE(74392),
 				palette: this.buffer.subarray(73592, 73720), 
-				underwaterPalette: this.buffer.subarray(70904, 71032)
+				underwaterPalette: this.buffer.subarray(70904, 71032),
+				debugMode: this.buffer[74866]
 			};
 			
 			this.data.paletteArray = this.getPaletteArray(this.data.palette); 
@@ -117,6 +118,11 @@ module.exports = {
 			if (value > 255) { throw new Error('Too big!'); }
 			
 			this.buffer.writeUInt8(value, 74377);
+			this.analyzeGame();
+		}
+		
+		setDebugMode (bool) {
+			this.buffer[74866] = Number(bool);
 			this.analyzeGame();
 		}
 		
