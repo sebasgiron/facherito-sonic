@@ -60,9 +60,8 @@ module.exports = {
 				underwaterPalette: this.buffer.subarray(70904, 71032)
 			};
 			
-			this.data.paletteForTest = Array.from(this.data.palette).toString();
 			this.data.paletteArray = this.getPaletteArray(this.data.palette); 
-			this.data.UndPaletteForTest = Array.from(this.data.underwaterPalette).toString();
+			this.data.undPaletteArray = this.getPaletteArray(this.data.underwaterPalette); 
 		}
 		
 		getPaletteArray(aBuffer) {
@@ -130,6 +129,23 @@ module.exports = {
 		writeGame (target) {
 			fs.writeFileSync(target || this.fileName, this.buffer);
 			console.log('Data written successfully');
+		}
+		
+		printPalette (isUnderwater) {
+			let targetPalette;
+			if (isUnderwater) {
+				targetPalette = this.data.undPaletteArray;
+			} else {
+				targetPalette = this.data.paletteArray;
+			}
+			
+			let html = '<style>body { background-color: #eee } </style>';
+			for (let color of targetPalette) {
+				html += `<button style=" width: 12.5%; margin: 0; border: 0; height: 12.5%; background-color: rgb(${color.red}, ${color.green}, ${color.blue}); " disabled></button>`
+			}
+			
+			fs.writeFileSync('out/palette.html', html);
+			console.log('Paleta descargada en out/palette.html');
 		}
 		
 	}

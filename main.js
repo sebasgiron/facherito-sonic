@@ -21,19 +21,22 @@ async function mainMenu() {
 	let doContinue = true;
 	
 	while (doContinue) {		
-		let menuOptions = []; 
+		var menuOptions = []; 
 		console.log('_____________________________\nMenú principal'); 
 		console.log('[1] Cargar archivo'); 
 		menuOptions.push('1'); 
 		if (saveState != null && saveState.canShowData())  {
 			console.log('[2] Mostrar la data'); 
 			menuOptions.push('2'); 
-		}		
+			console.log('[3] Imprimir paleta'); 
+			menuOptions.push('3'); 
+		}
 		console.log('[X] Salir \n'); 
 		menuOptions.push('X'); 
 		switch (await getMenuOption(menuOptions)) {
 			case '1': await loadSavegame(); break; 
 			case '2': mostrarData(); break; 
+			case '3': await printPalette(); break;
 			case 'X': doContinue = false; break; 
 		}
 	}
@@ -69,6 +72,40 @@ async function loadSavegame() {
 
 function mostrarData() {
 	console.log(saveState.data); 
+}
+
+async function printPalette () {
+	let doContinuePalette = true;
+	
+	while (doContinuePalette) {
+		var menuOptions = [];
+		console.log('Qué paleta quieres cargar?');
+		console.log('[A] Cargar paleta normal'); 
+		menuOptions.push('A');
+		menuOptions.push('a');
+		console.log('[B] Cargar paleta aquática'); 
+		menuOptions.push('B');
+		menuOptions.push('b');
+		console.log('[X] Volver al menú principal'); 
+		menuOptions.push('X');
+		
+		switch (await getMenuOption(menuOptions)) {
+			case 'A':
+			case 'a': //Si se ponen de esta forma (sin break), se vuelven una misma opción
+				saveState.printPalette(false);
+				doContinuePalette = false;
+				break;
+			case 'B':
+			case 'b':
+				saveState.printPalette(true);
+				doContinuePalette = false;
+				break;
+			case 'X':
+				doContinuePalette = false;
+				break;
+		}
+		
+	}
 }
 
 mainMenu();
