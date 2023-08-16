@@ -22,14 +22,28 @@ async function mainMenu() {
 	
 	while (doContinue) {		
 		var menuOptions = []; 
-		console.log('_____________________________\nMenú principal'); 
+		console.log('------------------------------\nMenú principal'); 
 		console.log('[1] Cargar archivo'); 
 		menuOptions.push('1'); 
 		if (saveState != null && saveState.canShowData())  {
 			console.log('[2] Mostrar la data'); 
 			menuOptions.push('2'); 
 			console.log('[3] Imprimir paleta'); 
-			menuOptions.push('3'); 
+			menuOptions.push('3');
+			console.log('[4] Cambiar número de anillos'); 
+			menuOptions.push('4');
+			console.log('[5] Cambiar número de vidas'); 
+			menuOptions.push('5');
+			console.log('[6] Cambiar puntuación'); 
+			menuOptions.push('6');
+			console.log('[7] Cambiar zona'); 
+			menuOptions.push('7');
+			console.log('[8] Cambiar acto'); 
+			menuOptions.push('8');
+			
+			
+			console.log('[9] Guardar'); 
+			menuOptions.push('9');
 		}
 		console.log('[X] Salir \n'); 
 		menuOptions.push('X'); 
@@ -37,6 +51,12 @@ async function mainMenu() {
 			case '1': await loadSavegame(); break; 
 			case '2': mostrarData(); break; 
 			case '3': await printPalette(); break;
+			case '4': await ringChange(); break;
+			case '5': await livesChange(); break;
+			case '6': await scoreChange(); break;
+			case '7': await zoneChange(); break;
+			case '8': await actChange(); break;
+			case '9': await writeGame(); break;
 			case 'X': doContinue = false; break; 
 		}
 	}
@@ -106,6 +126,162 @@ async function printPalette () {
 		}
 		
 	}
+}
+
+async function writeGame () {
+	let doContinueWriting = true;
+	
+	while (doContinueWriting) {
+		var menuOptions = [];
+		console.log('Quieres reescribir el archivo o guardarlo con otro nombre?');
+		console.log('[A] Reescribirlo');
+		menuOptions.push('A');
+		menuOptions.push('a');
+		console.log('[B] Guardarlo con otro nombre');
+		menuOptions.push('B');
+		menuOptions.push('b');
+		console.log('[X] Volver al menú principal');
+		menuOptions.push('X');
+		
+		switch (await getMenuOption(menuOptions)) {
+			case 'A':
+			case 'a':
+				saveState.writeGame();
+				doContinueWriting = false;
+				break;
+			case 'B':
+			case 'b':
+				saveState.writeGame(await askQuestion('Escribe la nueva ruta y nombre del archivo: '));
+				doContinueWriting = false;
+				break;
+			case 'X':
+				doContinueWriting = false;
+				break;
+		}
+	}
+}
+
+async function ringChange () {
+	let doContinueRings = true;
+	
+	while (doContinueRings) {
+		var menuOptions = [];
+		console.log(`Tienes ${saveState.data.rings} anillo(s)`);
+		console.log('Elige cuántos anillos quieres tener (0 - 65535)');
+		for (let i = 0; i <= 65535; i++) {
+			menuOptions.push(String(i));
+		}
+		var nRings = await getMenuOption(menuOptions);
+		if (nRings != null) {
+			saveState.setRings(nRings);
+			doContinueRings = false;
+		}
+		
+	} 
+}
+
+async function livesChange () {
+	let doContinueLives = true;
+	
+	while (doContinueLives) {
+		var menuOptions = [];
+		console.log(`Tienes ${saveState.data.lives} vida(s)`);
+		console.log('Elige cuántas vidas quieres tener (0 - 255)');
+		for (let i = 0; i <= 255; i++) {
+			menuOptions.push(String(i));
+		}
+		var nLives = await getMenuOption(menuOptions);
+		if (nLives != null) {
+			saveState.setLives(nLives);
+			doContinueLives = false;
+		}
+		
+	} 
+}
+
+async function debugChange () {
+	let doContinueDebug = true;
+	while (doContinueDebug) {
+		var menuOptions = [];
+		console.log(`El modo debug está ${Boolean(saveState.data.debugMode) ? 'activado' : 'deasctivado'}`);
+		console.log('Quieres activar el modo debug?');
+		console.log('[S] Sí');
+		menuOptions.push('S');
+		console.log('[N] No');
+		menuOptions.push('N');
+		console.log('[X] Volver al menú principal');
+		menuOptions.push('X');
+		
+		switch (await getMenuOption(menuOptions)) {
+			case 'S':
+				saveState.setDebugMode(true);
+				doContinueDebug = false;
+				console.log('Modo debug activado');
+				break;
+			case 'N':
+				saveState.setDebugMode(false);
+				doContinueDebug = false;
+				console.log('Modo debug desactivado');
+				break;
+			case 'X':
+				doContinueDebug = false;
+				break;
+		}
+	}
+}
+
+async function scoreChange () {
+	let doContinueScore = true;
+	
+	while (doContinueScore) {
+		console.log(`Tienes ${saveState.data.score} puntos`);
+		var nScore = await askQuestion('Elige cuántos anillos quieres tener (0 - 4294967290) (debe ser divisible entre 10)\n');
+		if (nScore != null && Number(nScore) % 10 === 0 && Number(nScore) <= 4294967295) {
+			saveState.setScore(nScore);
+			doContinueScore = false;
+		} else {
+			console.log('Número no válido');
+		}
+		
+	} 
+}
+
+async function zoneChange () {
+	let doContinueZone = true;
+	
+	while (doContinueZone) {
+		var menuOptions = [];
+		console.log(`Estás en la zona ${saveState.data.zone}.`);
+		console.log('En qué zona quieres estar? (0 - 255) (Solo existen 17)'); //TODO: Añadir una interfaz con cada una de las zonas
+		for (let i = 0; i <= 255; i++) {
+			menuOptions.push(String(i));
+		}
+		var nZone = await getMenuOption(menuOptions);
+		if (nZone != null) {
+			saveState.setZone(nZone);
+			doContinueZone = false;
+		}
+		
+	} 
+}
+
+async function actChange () {
+	let doContinueAct = true;
+	
+	while (doContinueAct) {
+		var menuOptions = [];
+		console.log(`Estás en el acto ${saveState.data.act}.`);
+		console.log('En qué acto quieres estar? (0 - 255) (a partir del 128 [inclusivo] son inestables)'); //TODO: Añadir una interfaz con cada una de las zonas
+		for (let i = 0; i <= 255; i++) {
+			menuOptions.push(String(i));
+		}
+		var nAct = await getMenuOption(menuOptions);
+		if (nAct != null) {
+			saveState.setAct(nAct);
+			doContinueAct = false;
+		}
+		
+	} 
 }
 
 mainMenu();
