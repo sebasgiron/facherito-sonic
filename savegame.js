@@ -128,6 +128,7 @@ module.exports = {
 		
 		setScore (value) {
 			if (value > 4294967295) { throw new Error('Too big!') }
+			if (value % 10 !== 0) { throw new Error('Score must be divisible by 10!') }
 			this.buffer.writeUInt32BE(value / 10, 74398);
 			this.analyzeGame();
 		}
