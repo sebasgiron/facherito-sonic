@@ -55,9 +55,38 @@ module.exports = {
 			};
 			
 			this.data.paletteForTest = Array.from(this.data.palette).toString();
+			this.data.paletteArray = this.getPaletteArray(this.data.palette); 
 			this.data.UndPaletteForTest = Array.from(this.data.underwaterPalette).toString();
 		}
 		
+		getPaletteArray(aBuffer) {
+			let index = 0;
+			let result = []; 
+			const colormap = new Map(); 
+			colormap.set(0,0); 
+			colormap.set(2,52); 
+			colormap.set(4,87); 
+			colormap.set(6,116); 
+			colormap.set(8,144); 
+			colormap.set(10,172); 
+			colormap.set(12,206); 
+			colormap.set(14,255); 
+			
+			while (index < aBuffer.length) {
+				let b1 = aBuffer[index]; 
+				let b2 = aBuffer[index+1]; 
+				
+				result.push({
+					blue: colormap.get((b1 % 16)), 
+					green: colormap.get((b2 % 16)), 
+					red: colormap.get(b2 >> 4)
+				}); 
+				
+				index = index + 2; 		
+			}
+			return result; 
+		}
+			
 		setRings (value) {
 			if (value > 65535) { throw new Error('Too big!'); }
 			
