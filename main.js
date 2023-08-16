@@ -14,24 +14,61 @@ function askQuestion (question) {
 	});
 }
 
-//La función askQuestion devuelve una promesa que se resolverá (dará un resultado) al responder a la pregunta
+// Aquí guardaremos el juego procesado
+var saveState; 
 
-async function main () {
-	let fileName = await askQuestion('¿Cuál es la ruta del archivo quieres leer?');
-	if (fileName === 'exit') { rl.close(); return; }
+async function mainMenu() {
+	let doContinue = true;
 	
-	try {
-		let saveState = new SavedGame(fileName);
-		saveState.readGame();
-		
-		console.log(saveState.data);
-	} catch (e) {
-		console.clear();
-		console.log(`No se puedo leer la información de ${fileName || '???'}. Razón: ${e.message || 'desconocida'}`);
-		return main() //Repite la pregunta y termina con este programa (el rl.close se hará en el el sub-main())
+	while (doContinue) {		
+		let menuOptions = []; 
+		console.log('_____________________________\nMenú principal'); 
+		console.log('[1] Cargar archivo'); 
+		menuOptions.push('1'); 
+		if (saveState != null && saveState.canShowData())  {
+			console.log('[2] Mostrar la data'); 
+			menuOptions.push('2'); 
+		}		
+		console.log('[X] Salir \n'); 
+		menuOptions.push('X'); 
+		switch (await getMenuOption(menuOptions)) {
+			case '1': await loadSavegame(); break; 
+			case '2': mostrarData(); break; 
+			case 'X': doContinue = false; break; 
+		}
 	}
-	
-	rl.close();
+
+	rl.close(); 
 }
 
-main();
+async function getMenuOption(menuOptions) {
+	let answer = null; 
+	while (answer == null) {
+		answer = await askQuestion('Introduce la opción deseada: '); 
+		if (!(menuOptions.includes(answer))) {			
+			console.log('La opción que has elegido no es válida'); 
+			answer = null; 
+		}
+	}
+	return answer; 
+}
+
+async function loadSavegame() {
+	console.log('Indica la ruta del archivo que quieres leer:'); 
+	let fileName = await askQuestion('');
+		
+	try {
+		console.log('Procesando archivo\n');
+		saveState = new SavedGame(fileName);
+		saveState.readGame();
+		console.log(''); 
+	} catch (e) {		
+		console.log(`No se pudo leer la información de ${fileName || '???'}. Mensaje:\n${e.message}`);
+	}
+}
+
+function mostrarData() {
+	console.log(saveState.data); 
+}
+
+mainMenu();
