@@ -1,0 +1,71 @@
+<html>
+	<head>
+		<title>Palette Tester</title>
+		<meta charset="utf8">
+	</head>
+	<body style="background-color: #eee">
+		<input type="text" placeholder="Coloca la paleta aquí..." style="width:35%;" id="palette"></input>
+		<button onclick="createPalette()">Crear</button>
+		<br>
+	</body>
+	<script>
+		function createTile (byte1, byte2) { //Los bytes se dan como strings en binario
+			if ((String(byte1) + String(byte2)).length !== 16) { window.alert('Longitud incorrecta de byte'); console.log(byte1, byte2); return; }
+			
+			const blue = transformIntoBrightness(byte1.slice(4, 7))
+			const green = transformIntoBrightness(byte2.slice(0, 3));
+			const red = transformIntoBrightness(byte2.slice(4, 7));
+			
+			console.log(blue, green, red);
+			
+			let tile = document.createElement('button');
+			tile.style = `margin: 0; border: 0; width: 12.5%; height: 12.5%; background-color: rgb(${red}, ${green}, ${blue});`
+			
+			return tile;
+		}
+		
+		function transformIntoBrightness (bites) {
+			switch (bites) {
+				case '000':
+					return 0;
+				case '001':
+					return 52;
+				case '010':
+					return 87;
+				case '011':
+					return 116;
+				case '100':
+					return 144;
+				case '101':
+					return 172;
+				case '110':
+					return 206;
+				case '111':
+					return 255;
+			}
+		}
+		
+		function createPalette () {
+			const palette = document.getElementById('palette').value.split(',').map(convertIntoByte);
+			console.log(palette);
+			
+			if (palette.length !== 128) { window.alert('Wrong input'); return; }
+			
+			document.body.innerText = '';
+			
+			for (let i = 0; i < 128; i += 2) {
+				document.body.appendChild(createTile(palette[i], palette[i + 1]));
+			}
+		}
+		
+		function convertIntoByte (number) {
+			let nByte = Number(number).toString(2);
+			
+			while (nByte.length < 8) {
+				nByte = '0' + nByte;
+			}
+			
+			return nByte;
+		}
+	</script>
+</html>

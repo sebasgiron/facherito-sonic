@@ -45,14 +45,17 @@ module.exports = {
 				playerLives: this.buffer[74378],
 				zone: this.buffer[74376], 
 				act: this.buffer[74377], //Empezando en 0 (ej. EHZ => Zone 00 Act 00)
-				levelLayout: this.buffer.subarray(42104, 46199), 
+				levelLayout: this.buffer.subarray(42104, 46200), 
 				score: this.buffer.readUInt32BE(74398) * 10,
 				emeraldCount: this.buffer[74793],
-				emeraldArray: this.buffer.subarray(74794, 74800),
+				emeraldArray: this.buffer.subarray(74794, 74801),
 				rings: this.buffer.readUInt16BE(74392),
-				palette: this.buffer.subarray(73592, 73719), 
-				underwaterPalette: this.buffer.subarray(70904, 71031)
+				palette: this.buffer.subarray(73592, 73720), 
+				underwaterPalette: this.buffer.subarray(70904, 71032)
 			};
+			
+			this.data.paletteForTest = Array.from(this.data.palette).toString();
+			this.data.UndPaletteForTest = Array.from(this.data.underwaterPalette).toString();
 		}
 		
 		setRings (value) {
