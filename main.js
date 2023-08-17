@@ -40,10 +40,11 @@ async function mainMenu() {
 			menuOptions.push('7');
 			console.log('[8] Cambiar acto'); 
 			menuOptions.push('8');
-			
-			
-			console.log('[9] Guardar'); 
+			console.log('[9] Cambiar esmeraldas'); 
 			menuOptions.push('9');
+			
+			console.log('[10] Guardar'); 
+			menuOptions.push('10');
 		}
 		console.log('[X] Salir \n'); 
 		menuOptions.push('X'); 
@@ -56,7 +57,8 @@ async function mainMenu() {
 			case '6': await scoreChange(); break;
 			case '7': await zoneChange(); break;
 			case '8': await actChange(); break;
-			case '9': await writeGame(); break;
+			case '9': await emeraldChange(); break;
+			case '10': await writeGame(); break;
 			case 'X': doContinue = false; break; 
 		}
 	}
@@ -282,6 +284,35 @@ async function actChange () {
 		}
 		
 	} 
+}
+
+async function emeraldChange () {
+	let obtainedEmeralds = [];
+	
+	for (let i = 1; i <= 7; i++) {
+		var doContinueEmeralds = true;
+		
+		while (doContinueEmeralds) {
+			var menuOptions = [];
+			console.log(`Quieres obtener la esmeralda número ${i}?`);
+			console.log('[S] Sí');
+			menuOptions.push('S');
+			menuOptions.push('s');
+			console.log('[N] No');
+			menuOptions.push('N');
+			menuOptions.push('n');
+			
+			var answer = await getMenuOption(menuOptions);
+			if (answer != null) { obtainedEmeralds.push(answer); doContinueEmeralds = false; }
+		}
+	}
+	
+	saveState.setEmeralds(obtainedEmeralds.map(el => {
+		if (el === 'S' || el === 's') {
+			return '1';
+		}
+		return '0';
+	}))
 }
 
 mainMenu();

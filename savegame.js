@@ -133,6 +133,17 @@ module.exports = {
 			this.analyzeGame();
 		}
 		
+		setEmeralds (targetArray) { // ['0', '0', '1', '0', '0', '1', '1']
+			if (targetArray.length !== 7) { throw new Error ('Wrong number of elements (must be 7)!') }
+			this.buffer[74793] = targetArray.filter(el => Boolean(Number(el))).length;
+			
+			for (let i = 0; i < 7; i++) {
+				this.buffer[74794 + i] = targetArray[i];
+			}
+			
+			this.analyzeGame();
+		}
+		
 		writeGame (target) {
 			fs.writeFileSync(target || this.fileName, this.buffer);
 			console.log('Data written successfully');
