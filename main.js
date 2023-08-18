@@ -32,6 +32,8 @@ async function mainMenu() {
 			menuOptions.push('3');
 			console.log('[4] Cambiar valores del juego'); 
 			menuOptions.push('4');
+			console.log('[5] Crear archivo CSV de la memoria de objetos'); 
+			menuOptions.push('5');
 			console.log('[G] Guardar'); 
 			menuOptions.push('G');
 		}
@@ -42,6 +44,7 @@ async function mainMenu() {
 			case '2': mostrarData(); break; 
 			case '3': await printPalette(); break;
 			case '4': await changesMenu(); break;
+			case '5': await saveState.printObjectCSV; break;
 			case 'G': await writeGame(); break;
 			case 'X': doContinue = false; break; 
 		}
@@ -319,6 +322,8 @@ async function changesMenu() {
 		menuOptions.push('5');
 		console.log('[6] Cambiar esmeraldas'); 
 		menuOptions.push('6');
+		console.log('[7] Cambiar objeto'); 
+		menuOptions.push('7');
 		console.log('[X] Salir \n'); 
 		menuOptions.push('X'); 
 		switch (await getMenuOption(menuOptions)) {
@@ -328,10 +333,64 @@ async function changesMenu() {
 			case '4': await zoneChange(); break;
 			case '5': await actChange(); break;
 			case '6': await emeraldChange(); break;
+			case '7': await objectChange(); break;
 			case 'X': doContinue = false; break; 
 		}
 	}
 }
 
+async function objectChange () {
+	let doContinueObject = true, objectIndex, property, value;
+	while (doContinueObject) {
+		var menuOptions = [];
+		console.log(`Qué objeto quieres cambiar (del 1 al ${saveState.data.objectArray.length})?`);
+		for (let i = 1; i <= saveState.data.objectArray.length; i++) {
+			menuOptions.push(String(i));
+		}
+		
+		objectIndex = Number(await getMenuOption(menuOptions)) - 1;
+		
+		if (objectIndex != null) {
+			doContinueObject = false;
+		}
+	}
+	
+	console.log(`Vas a cambiar el objeto ${objectIndex + 1}, con id ${saveState.data.objectArray[objectIndex].id}.\nQué propiedad quieres cambiar?`);
+	doContinueObject = true;
+	while (doContinueObject) {
+		var menuOptions = [], options = [];
+		
+		var i = 1;
+		for (let mappedProperty of saveState.objectStatusMap.keys()) {
+			menuOptions.push(String(i));
+			options.push(mappedProperty);
+			console.log(`[${i}] ${mappedProperty}`);
+			i++;
+		}
+		
+		property = options[Number(await getMenuOption(menuOptions)) - 1];
+		console.log(property);
+		
+		if (property != null) {
+			doContinueObject = false;
+		}
+	}
+	
+	console.log(`Vas a cambiar la propiedad ${property}, que tiene el valor ${saveState.data.objectArray[objectIndex][property]}`);
+	doContinueObject = true;
+	while (doContinueObject) {
+		try {
+			value = Number(await askQuestion('Qué valor quieres que tenga?'));
+			if (Number.isNaN(value)) { throw new Error('Valor no válido. Debe ser un valor numérico') }
+			
+			doContinueObject = false;
+		} catch (e) {
+			console.log(e);
+		}
+	}
+	
+	saveState.setObjectProperty(saveState.data.objectArray[objectIndex], property, value);
+	console.log(`La propiedad ${property} del objeto número ${objectIndex + 1} ahora es ${value}`);
+}
 
 mainMenu();

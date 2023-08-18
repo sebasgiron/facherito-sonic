@@ -177,28 +177,52 @@ module.exports = {
 			let result = []; 
 			while (offset <= (0x2478 + 0xD5FF)) {
 				if (result.length < 2) {
-					result.push(this.readObjectStatusSonic(this.buffer.subarray(offset, offset + 0x40))); 
+					result.push(this.readObjectStatusSonic(this.buffer.subarray(offset, offset + 0x40), offset)); 
 				} else {
-					result.push(this.readObjectStatus(this.buffer.subarray(offset, offset + 0x40))); 
+					result.push(this.readObjectStatus(this.buffer.subarray(offset, offset + 0x40), offset)); 
 				}
 				offset = offset + 0x40; 
 			}
 			return(result); 
 		}
 		
-		readObjectStatus(source) {
+		setObjectProperty(objectStatus, property, value) { // { id: 1, ..., parentIndex: buffer }, 'id', 2
+			switch (this.objectStatusMap.get(property).t) {
+				case 's':
+					if (value > 255 && value < 0) { throw new Error ('El valor no está en el rango requerido (0 a 255)'); }
+					this.buffer.writeUInt8(value, objectStatus.sourceBufferOffset + this.objectStatusMap.get(property).i);
+					break;
+				case 'l':
+					if (value > 127 && value < -127) { throw new Error ('El valor no está en el rango requerido (-127 al 127)'); }
+					this.buffer.writeInt16BE(value, objectStatus.sourceBufferOffset + this.objectStatusMap.get(property).i);
+					break;
+				case 'lu':
+					if (value > 65535 && value < 0) { throw new Error ('El valor no está en el rango requerido (0 al 65535)'); }
+					this.buffer.writeUInt16BE(value, objectStatus.sourceBufferOffset + this.objectStatusMap.get(property).i);
+					break;
+				case 'b':
+					if (this.data.objectArray[0][property].length !== value.length) { throw new Error('Longitud incorrecta') }
+					for (let i = 0; i < value.length; i++) {
+						this.buffer[objectStatus.sourceBufferOffset + this.objectStatusMap.get(property).i + i] = value[i];
+					}
+					break;
+			}
+			this.analyzeGame()
+		}
+			
+		readObjectStatus(source, sourceBufferOffset) {
 			let result = {
 				id: source[0], 
 				render_flags: source[1],
 				art_tile: source.subarray(0x02, 0x04), 
 				mappings: source.subarray(0x04, 0x08), 
-				x_pos: source.subarray(0x08, 0x0A), 
-				x_sub: source.subarray(0x0A, 0x0C), 
-				y_pos: source.subarray(0x0C, 0x0E), 
+				x_pos: source.readUInt16BE(0x08), 
+				x_sub: source.readUInt16BE(0x0A), 
+				y_pos: source.readUInt16BE(0x0C), //00 --> Arriba izquierda
 				y_pixel: source.subarray(0x0E, 0x10), 
-				x_vel: source.subarray(0x10, 0x12), 
-				y_vel: source.subarray(0x12, 0x14),
-				inertia: source.subarray(0x14, 0x16),
+				x_vel: source.readInt16BE(0x10), 
+				y_vel: source.readInt16BE(0x12), //TODO: Leer como positivos / negativos: x_vel, y_vel, inertia
+				inertia: source.readInt16BE(0x14),
 				y_radius: source[0x16], 
 				x_radius: source[0x17],
 				priority: source[0x18], 
@@ -217,7 +241,9 @@ module.exports = {
 				angle: source[0x26],
 				flip_angle: source[0x27],
 				subtype: source[0x28],
-				parent_index: source.subarray(0x3E, 0x40) 
+				parent_index: source.subarray(0x3E, 0x40),
+				sourceBuffer: source,
+				sourceBufferOffset: sourceBufferOffset
 			}; 
 			return(result); 
 		}
@@ -230,15 +256,15 @@ module.exports = {
 			result.status_secondary = source[0x2B];
 			result.flips_remaining = source[0x2C];
 			result.flip_speed = source[0x2D];
-			result.move_lock = source.subarray(0x2E, 0x30); 
-			result.invulnerable_time = source.subarray(0x30, 0x32); 
-			result.invincibility_time = source.subarray(0x32, 0x34);
-			result.speedshoes_time = source.subarray(0x34, 0x36);
+			result.move_lock = source.readUInt16BE(0x2E); 
+			result.invulnerable_time = source.readUInt16BE(0x30); 
+			result.invincibility_time = source.readUInt16BE(0x32);
+			result.speedshoes_time = source.readUInt16BE(0x34);
 			result.next_tilt = source[0x36]; 
 			result.tilt = source[0x37];
 			result.stick_to_convex = source[0x38];
 			result.spindash_flag = source[0x39];
-			result.spindash_counter = source.subarray(0x3A, 0x3C); 
+			result.spindash_counter = source.readUInt16BE(0x3A); 
 			result.jumping = source[0x3C];
 			result.interact = source[0x3D];
 			result.top_solid_bit = source[0x3E]; 
@@ -256,6 +282,82 @@ module.exports = {
 				usedLength : this.getUsedObjectArray().length
 			}; 
 			return(result); 
+		}
+			
+		printObjectsCSV () {
+			let text = Object.keys(this.data.objectArray[0]).toString(); //La de P1
+			for (let object of this.data.objectArray) {
+				text += '\n';
+				for (let property of Object.keys(object)) {
+					if (object[property] instanceof Array || object[property] instanceof Buffer) {
+						text += `"${Array.from(object[property]).toString()}",`;
+					} else {
+						text += object[property] + ',';
+					}
+				}
+				text = text.split('');
+				text.pop();
+				text = text.join(''); //Quita la coma del final
+			}
+			fs.writeFileSync('out/objectCSV.csv', text);
+			console.log('Impreso correctamente en out/objectCSV.csv');
+		}
+		
+		get objectStatusMap () { //Get permite acceder al resultado como si fuera una variable (sin los paréntesis)
+			let result = new Map();
+			
+			result.set('id', { i: 0, t: 's' /*single value*/ });
+			result.set('render_flags', { i: 1, t: 's' });
+			result.set('art_tile', { i: 2, t: 'b' /*buffer*/ });
+			result.set('mappings', { i: 0x4, t: 'b' });
+			result.set('x_pos', { i: 0x8, t: 'lu' /*large unsigned (16 bits)*/ });
+			result.set('x_sub', { i: 0x0A, t: 'lu' });
+			result.set('y_pos', { i: 0x0C, t: 'lu' });
+			result.set('y_pixel', { i: 0x0E, t: 'b' });
+			result.set('x_vel', { i: 0x10, t: 'l' /*large signed (16 bits)*/ });
+			result.set('y_vel', { i: 0x12, t: 'l' });
+			result.set('inertia', { i: 0x14, t: 'l' });
+			result.set('y_radius', { i: 0x16, t: 's' });
+			result.set('x_radius', { i: 0x17, t: 's' });
+			result.set('priority', { i: 0x18, t: 's' });
+			result.set('width_pixels', { i: 0x19, t: 's' });
+			result.set('mapping_frame', { i: 0x1A, t: 's' });
+			result.set('anim_frame', { i: 0x1B, t: 's' });
+			result.set('anim', { i: 0x1C, t: 's' });
+			result.set('next_anim', { i: 0x1D, t: 's' });
+			result.set('anim_frame_duration', { i: 0x1E, t: 's' });
+			result.set('collision_flags', { i: 0x20, t: 's' });
+			result.set('collision_property', { i: 0x21, t: 's' });
+			result.set('status_flags', { i: 0x22, t: 's' });
+			result.set('respawn_index', { i: 0x23, t: 's' });
+			result.set('routine', { i: 0x24, t: 's' });
+			result.set('routine_secondary', { i: 0x25, t: 's' });
+			result.set('angle', { i: 0x26, t: 's' });
+			result.set('flip_angle', { i: 0x27, t: 's' });
+			result.set('subtype', { i: 0x28, t: 's' });
+			result.set('parent_index', { i: 0x3E, t: 'b' });
+			result.set('air_left', { i: 0x28, t: 's' });
+			result.set('flip_turned', { i: 0x29, t: 's' });
+			result.set('obj_control', { i: 0x2A, t: 's' });
+			result.set('status_secondary', { i: 0x2B, t: 's' });
+			result.set('flips_remaining', { i: 0x2C, t: 's' });
+			result.set('flip_speed', { i: 0x2D, t: 's' });
+			result.set('move_lock', { i: 0x2E, t: 'lu' });
+			result.set('invulnerable_time', { i: 0x30, t: 'lu' });
+			result.set('invincibility_time', { i: 0x32, t: 'lu' });
+			result.set('speedshoes_time', { i: 0x34, t: 'lu' });
+			result.set('next_tilt', { i: 0x36, t: 's' });
+			result.set('tilt', { i: 0x37, t: 's' });
+			result.set('stick_to_convex', { i: 0x38, t: 's' });
+			result.set('spindash_flag', { i: 0x39, t: 's' });
+			result.set('spindash_counter', { i: 0x3A, t: 'lu' });
+			result.set('jumping', { i: 0x3C, t: 's' });
+			result.set('interact', { i: 0x3D, t: 's' });
+			result.set('top_solid_bit', { i: 0x3E, t: 's' });
+			result.set('lrb_solid_bit', { i: 0x3F, t: 's' });
+			
+			
+			return result;
 		}
 		
 	}
