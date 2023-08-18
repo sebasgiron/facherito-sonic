@@ -58,7 +58,8 @@ module.exports = {
 				rings: this.buffer.readUInt16BE(74392),
 				palette: this.buffer.subarray(73592, 73720), 
 				underwaterPalette: this.buffer.subarray(70904, 71032),
-				debugMode: this.buffer[74866]
+				debugMode: this.buffer[74866],
+				objectArray: this.readObjects()
 			};
 			
 			this.data.paletteArray = this.getPaletteArray(this.data.palette); 
@@ -164,6 +165,97 @@ module.exports = {
 			
 			fs.writeFileSync('out/palette.html', html);
 			console.log('Paleta descargada en out/palette.html');
+		}
+		
+		readObjects() {
+			//0x2478
+			//0xB000 inicio
+			//0xD5FF final
+			//0x40 longitud de cada bloque
+			//152 objetos
+			let offset = 0x2478 + 0xB000;
+			let result = []; 
+			while (offset <= (0x2478 + 0xD5FF)) {
+				if (result.length < 2) {
+					result.push(this.readObjectStatusSonic(this.buffer.subarray(offset, offset + 0x40))); 
+				} else {
+					result.push(this.readObjectStatus(this.buffer.subarray(offset, offset + 0x40))); 
+				}
+				offset = offset + 0x40; 
+			}
+			return(result); 
+		}
+		
+		readObjectStatus(source) {
+			let result = {
+				id: source[0], 
+				render_flags: source[1],
+				art_tile: source.subarray(0x02, 0x04), 
+				mappings: source.subarray(0x04, 0x08), 
+				x_pos: source.subarray(0x08, 0x0A), 
+				x_sub: source.subarray(0x0A, 0x0C), 
+				y_pos: source.subarray(0x0C, 0x0E), 
+				y_pixel: source.subarray(0x0E, 0x10), 
+				x_vel: source.subarray(0x10, 0x12), 
+				y_vel: source.subarray(0x12, 0x14),
+				inertia: source.subarray(0x14, 0x16),
+				y_radius: source[0x16], 
+				x_radius: source[0x17],
+				priority: source[0x18], 
+				width_pixels: source[0x19],
+				mapping_frame: source[0x1A],
+				anim_frame: source[0x1B], 
+				anim: source[0x1C],
+				next_anim: source[0x1D],
+				anim_frame_duration: source[0x1E], 
+				collision_flags: source[0x20],
+				collision_property: source[0x21],
+				status_flags: source[0x22],
+				respawn_index: source[0x23],
+				routine: source[0x24],
+				routine_secondary: source[0x25],
+				angle: source[0x26],
+				flip_angle: source[0x27],
+				subtype: source[0x28],
+				parent_index: source.subarray(0x3E, 0x40) 
+			}; 
+			return(result); 
+		}
+		
+		readObjectStatusSonic(source) {
+			let result = this.readObjectStatus(source); 
+			result.air_left = source[0x28];
+			result.flip_turned = source[0x29];
+			result.obj_control = source[0x2A];
+			result.status_secondary = source[0x2B];
+			result.flips_remaining = source[0x2C];
+			result.flip_speed = source[0x2D];
+			result.move_lock = source.subarray(0x2E, 0x30); 
+			result.invulnerable_time = source.subarray(0x30, 0x32); 
+			result.invincibility_time = source.subarray(0x32, 0x34);
+			result.speedshoes_time = source.subarray(0x34, 0x36);
+			result.next_tilt = source[0x36]; 
+			result.tilt = source[0x37];
+			result.stick_to_convex = source[0x38];
+			result.spindash_flag = source[0x39];
+			result.spindash_counter = source.subarray(0x3A, 0x3C); 
+			result.jumping = source[0x3C];
+			result.interact = source[0x3D];
+			result.top_solid_bit = source[0x3E]; 
+			result.lrb_solid_bit = source[0x3F]; 
+			return(result); 
+		}
+		
+		getUsedObjectArray() {
+			return this.data.objectArray.filter(el => el.id != 0); 
+		}
+	
+		getObjectArrayInfo() {
+			let result = {
+				totalLength : this.data.objectArray.length, 
+				usedLength : this.getUsedObjectArray().length
+			}; 
+			return(result); 
 		}
 		
 	}

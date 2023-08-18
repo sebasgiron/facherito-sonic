@@ -30,21 +30,10 @@ async function mainMenu() {
 			menuOptions.push('2'); 
 			console.log('[3] Imprimir paleta'); 
 			menuOptions.push('3');
-			console.log('[4] Cambiar número de anillos'); 
+			console.log('[4] Cambiar valores del juego'); 
 			menuOptions.push('4');
-			console.log('[5] Cambiar número de vidas'); 
-			menuOptions.push('5');
-			console.log('[6] Cambiar puntuación'); 
-			menuOptions.push('6');
-			console.log('[7] Cambiar zona'); 
-			menuOptions.push('7');
-			console.log('[8] Cambiar acto'); 
-			menuOptions.push('8');
-			console.log('[9] Cambiar esmeraldas'); 
-			menuOptions.push('9');
-			
-			console.log('[10] Guardar'); 
-			menuOptions.push('10');
+			console.log('[G] Guardar'); 
+			menuOptions.push('G');
 		}
 		console.log('[X] Salir \n'); 
 		menuOptions.push('X'); 
@@ -52,13 +41,8 @@ async function mainMenu() {
 			case '1': await loadSavegame(); break; 
 			case '2': mostrarData(); break; 
 			case '3': await printPalette(); break;
-			case '4': await ringChange(); break;
-			case '5': await livesChange(); break;
-			case '6': await scoreChange(); break;
-			case '7': await zoneChange(); break;
-			case '8': await actChange(); break;
-			case '9': await emeraldChange(); break;
-			case '10': await writeGame(); break;
+			case '4': await changesMenu(); break;
+			case 'G': await writeGame(); break;
 			case 'X': doContinue = false; break; 
 		}
 	}
@@ -94,6 +78,7 @@ async function loadSavegame() {
 
 function mostrarData() {
 	console.log(saveState.data); 
+	console.log(saveState.getObjectArrayInfo()); 
 }
 
 async function printPalette () {
@@ -314,5 +299,39 @@ async function emeraldChange () {
 		return '0';
 	}))
 }
+
+// Menú de cambios
+async function changesMenu() {
+	let doContinue = true;
+	
+	while (doContinue) {		
+		var menuOptions = []; 
+		console.log('------------------------------\nMenú de cambios de valores'); 
+		console.log('[1] Cambiar número de anillos'); 
+		menuOptions.push('1');
+		console.log('[2] Cambiar número de vidas'); 
+		menuOptions.push('2');
+		console.log('[3] Cambiar puntuación'); 
+		menuOptions.push('3');
+		console.log('[4] Cambiar zona'); 
+		menuOptions.push('4');
+		console.log('[5] Cambiar acto'); 
+		menuOptions.push('5');
+		console.log('[6] Cambiar esmeraldas'); 
+		menuOptions.push('6');
+		console.log('[X] Salir \n'); 
+		menuOptions.push('X'); 
+		switch (await getMenuOption(menuOptions)) {
+			case '1': await ringChange(); break;
+			case '2': await livesChange(); break;
+			case '3': await scoreChange(); break;
+			case '4': await zoneChange(); break;
+			case '5': await actChange(); break;
+			case '6': await emeraldChange(); break;
+			case 'X': doContinue = false; break; 
+		}
+	}
+}
+
 
 mainMenu();
