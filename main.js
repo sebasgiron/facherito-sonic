@@ -44,7 +44,7 @@ async function mainMenu() {
 			case '2': mostrarData(); break; 
 			case '3': await printPalette(); break;
 			case '4': await changesMenu(); break;
-			case '5': await saveState.printObjectCSV; break;
+			case '5': await saveState.printObjectsCSV(); break;
 			case 'G': await writeGame(); break;
 			case 'X': doContinue = false; break; 
 		}
