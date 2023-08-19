@@ -324,6 +324,8 @@ async function changesMenu() {
 		menuOptions.push('6');
 		console.log('[7] Cambiar objeto'); 
 		menuOptions.push('7');
+		console.log('[8] Cambiar modo debug'); 
+		menuOptions.push('8');
 		console.log('[X] Salir \n'); 
 		menuOptions.push('X'); 
 		switch (await getMenuOption(menuOptions)) {
@@ -334,6 +336,7 @@ async function changesMenu() {
 			case '5': await actChange(); break;
 			case '6': await emeraldChange(); break;
 			case '7': await objectChange(); break;
+			case '8': await debugChange(); break;
 			case 'X': doContinue = false; break; 
 		}
 	}
