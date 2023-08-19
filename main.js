@@ -369,7 +369,6 @@ async function objectChange () {
 		}
 		
 		property = options[Number(await getMenuOption(menuOptions)) - 1];
-		console.log(property);
 		
 		if (property != null) {
 			doContinueObject = false;

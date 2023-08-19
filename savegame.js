@@ -181,7 +181,7 @@ module.exports = {
 				} else {
 					result.push(this.readObjectStatus(this.buffer.subarray(offset, offset + 0x40), offset)); 
 				}
-				offset = offset + 0x40; 
+				offset += 0x40; 
 			}
 			return(result); 
 		}
@@ -190,15 +190,15 @@ module.exports = {
 			switch (this.objectStatusMap.get(property).t) {
 				case 's':
 					if (value > 255 && value < 0) { throw new Error ('El valor no está en el rango requerido (0 a 255)'); }
-					this.buffer.writeUInt8(value, objectStatus.sourceBufferOffset + this.objectStatusMap.get(property).i);
+					this.buffer.writeUInt8(value, Number(objectStatus.sourceBufferOffset) + this.objectStatusMap.get(property).i);
 					break;
 				case 'l':
 					if (value > 127 && value < -127) { throw new Error ('El valor no está en el rango requerido (-127 al 127)'); }
-					this.buffer.writeInt16BE(value, objectStatus.sourceBufferOffset + this.objectStatusMap.get(property).i);
+					this.buffer.writeInt16BE(value, Number(objectStatus.sourceBufferOffset) + this.objectStatusMap.get(property).i);
 					break;
 				case 'lu':
 					if (value > 65535 && value < 0) { throw new Error ('El valor no está en el rango requerido (0 al 65535)'); }
-					this.buffer.writeUInt16BE(value, objectStatus.sourceBufferOffset + this.objectStatusMap.get(property).i);
+					this.buffer.writeUInt16BE(value, Number(objectStatus.sourceBufferOffset) + this.objectStatusMap.get(property).i);
 					break;
 				case 'b':
 					if (this.data.objectArray[0][property].length !== value.length) { throw new Error('Longitud incorrecta') }
@@ -248,8 +248,8 @@ module.exports = {
 			return(result); 
 		}
 		
-		readObjectStatusSonic(source) {
-			let result = this.readObjectStatus(source); 
+		readObjectStatusSonic(source, sourceBufferOffset) {
+			let result = this.readObjectStatus(source, sourceBufferOffset); 
 			result.air_left = source[0x28];
 			result.flip_turned = source[0x29];
 			result.obj_control = source[0x2A];
