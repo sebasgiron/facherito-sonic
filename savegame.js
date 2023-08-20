@@ -59,7 +59,8 @@ module.exports = {
 				palette: this.buffer.subarray(73592, 73720), 
 				underwaterPalette: this.buffer.subarray(70904, 71032),
 				debugMode: this.buffer[74866],
-				objectArray: this.readObjects()
+				objectArray: this.readObjects(),
+				ringArray: this.getRingLayout()
 			};
 			
 			this.data.paletteArray = this.getPaletteArray(this.data.palette); 
@@ -359,6 +360,21 @@ module.exports = {
 			
 			return result;
 		}
+		
+	  getRingLayout() {
+		  let result = []; 
+		  let offset = 0x2478 + 0xE800; 
+		  while ((offset <= 0x2478 + 0xEDFF) && (this.buffer.readUInt16BE(offset) !== 0xFFFF)) {
+			  result.push({
+				  x: this.buffer.readUInt16BE(offset), 
+				  t: this.buffer.readUInt8(offset + 2) >> 4, 
+				  y: this.buffer.readUInt16BE(offset + 2) << 4
+			  }); 
+			  offset += 4; 
+		  }
+		  return result; 
+	  }
+	  
 		
 	}
 
