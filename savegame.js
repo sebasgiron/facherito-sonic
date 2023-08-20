@@ -60,7 +60,7 @@ module.exports = {
 				underwaterPalette: this.buffer.subarray(70904, 71032),
 				debugMode: this.buffer[74866],
 				objectArray: this.readObjects(),
-				ringArray: this.getRingLayout()
+				ringArray: this.ringLayout
 			};
 			
 			this.data.paletteArray = this.getPaletteArray(this.data.palette); 
@@ -272,15 +272,11 @@ module.exports = {
 			result.lrb_solid_bit = source[0x3F]; 
 			return(result); 
 		}
-		
-		getUsedObjectArray() {
-			return this.data.objectArray.filter(el => el.id != 0); 
-		}
 	
-		getObjectArrayInfo() {
+		get objectArrayInfo() {
 			let result = {
 				totalLength : this.data.objectArray.length, 
-				usedLength : this.getUsedObjectArray().length
+				usedLength : this.data.objectArray.filter(el => el.id != 0).length
 			}; 
 			return(result); 
 		}
@@ -304,7 +300,7 @@ module.exports = {
 			console.log('Impreso correctamente en out/objectCSV.csv');
 		}
 		
-		get objectStatusMap () { //Get permite acceder al resultado como si fuera una variable (sin los paréntesis)
+		get objectStatusMap () {
 			let result = new Map();
 			
 			result.set('id', { i: 0, t: 's' /*single value*/ });
@@ -361,20 +357,20 @@ module.exports = {
 			return result;
 		}
 		
-	  getRingLayout() {
-		  let result = []; 
-		  let offset = 0x2478 + 0xE800; 
-		  while ((offset <= 0x2478 + 0xEDFF) && (this.buffer.readUInt16BE(offset) !== 0xFFFF)) {
-			  result.push({
-				  x: this.buffer.readUInt16BE(offset), 
-				  t: this.buffer.readUInt8(offset + 2) >> 4, 
-				  y: this.buffer.readUInt16BE(offset + 2) << 4
-			  }); 
-			  offset += 4; 
-		  }
-		  return result; 
-	  }
-	  
+		get ringLayout() {
+			let result = []; 
+			let offset = 0x2478 + 0xE800; 
+			while ((offset <= 0x2478 + 0xEDFF) && (this.buffer.readUInt16BE(offset) !== 0xFFFF)) {
+				result.push({
+					x: this.buffer.readUInt16BE(offset), 
+					t: this.buffer.readUInt8(offset + 2) >> 4, 
+					y: this.buffer.readUInt16BE(offset + 2) << 4
+				}); 
+				offset += 4; 
+			}
+			return result; 
+		}
+	
 		
 	}
 

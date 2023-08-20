@@ -80,8 +80,15 @@ async function loadSavegame() {
 }
 
 function mostrarData() {
-	console.log(saveState.data); 
-	console.log(saveState.getObjectArrayInfo()); 
+	console.log(`Zona: ${saveState.data.zone}`);
+	console.log(`Acto: ${saveState.data.act}`);
+	console.log(`Vida(s): ${saveState.data.playerLives}`);
+	console.log(`Anillo(s): ${saveState.data.rings}`);
+	console.log(`Puntos: ${saveState.data.score}`);
+	console.log(`Modo debug: ${Boolean(saveState.data.debugMode) ? 'activado' : 'desactivado'}`);
+	
+	console.log(`Objetos usados en memoria: ${saveState.objectArrayInfo.usedLength}`);
+	console.log(`Longitud de la lista de anillos en memoria: ${saveState.data.ringArray.length}`);
 }
 
 async function printPalette () {
