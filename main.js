@@ -385,16 +385,33 @@ async function objectChange () {
 		}
 	}
 	
-	console.log(`Vas a cambiar la propiedad ${property}, que tiene el valor ${saveState.data.objectArray[objectIndex][property]}`);
-	doContinueObject = true;
-	while (doContinueObject) {
-		try {
-			value = Number(await askQuestion('Qué valor quieres que tenga?'));
-			if (Number.isNaN(value)) { throw new Error('Valor no válido. Debe ser un valor numérico') }
-			
-			doContinueObject = false;
-		} catch (e) {
-			console.log(e);
+	if (saveState.objectStatusMap.get(property).t !== 'b') {
+		console.log(`Vas a cambiar la propiedad ${property}, que tiene el valor ${saveState.data.objectArray[objectIndex][property]}`);
+		doContinueObject = true;
+		while (doContinueObject) {
+			try {
+				value = Number(await askQuestion('Qué valor quieres que tenga?'));
+				if (Number.isNaN(value)) { throw new Error('Valor no válido. Debe ser un valor numérico') }
+				
+				doContinueObject = false;
+			} catch (e) {
+				console.log(e.message);
+			}
+		}
+	} else {
+		console.log(`Vas a cambiar la propiedad ${property}, que tiene el valor ${Array.from(saveState.data.objectArray[objectIndex][property]).toString()}`);
+		doContinueObject = true;
+		while (doContinueObject) {
+			try {
+				value = String(await askQuestion('Qué valor quieres que tenga?')).split(',');
+				value.forEach(el => {
+					if (Number.isNaN(Number(el))) { throw new Error(`El valor ${el} no es un número.`); }
+				})
+				
+				doContinueObject = false;
+			} catch (e) {
+				console.log(e.message);
+			}
 		}
 	}
 	

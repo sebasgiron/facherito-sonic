@@ -204,7 +204,7 @@ module.exports = {
 				case 'b':
 					if (this.data.objectArray[0][property].length !== value.length) { throw new Error('Longitud incorrecta') }
 					for (let i = 0; i < value.length; i++) {
-						this.buffer[objectStatus.sourceBufferOffset + this.objectStatusMap.get(property).i + i] = value[i];
+						this.buffer[objectStatus.sourceBufferOffset + this.objectStatusMap.get(property).i + i] = value[i].toString(16);
 					}
 					break;
 			}
